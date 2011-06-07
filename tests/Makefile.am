@@ -34,8 +34,7 @@ tests_LDFLAGS =  \
 	-L../src  \
 	-lmogile_fs  \
 	-lm  \
-	-lmicrohttpd  \
-	-lvanessa_logger
+	-lmicrohttpd
 
 tests_LDADD = \
 	$(MOGILE_FS_LIBS)

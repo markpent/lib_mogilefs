@@ -73,15 +73,15 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfigdir)" \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libmogile_fs_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libmogile_fs_la_OBJECTS = libmogile_fs_la-lib.lo \
-	libmogile_fs_la-tracker.lo libmogile_fs_la-logger.lo \
-	libmogile_fs_la-request.lo libmogile_fs_la-pool.lo \
-	libmogile_fs_la-file.lo libmogile_fs_la-file_upload.lo \
+am_libmogile_fs_la_OBJECTS = libmogile_fs_la-tracker.lo \
+	libmogile_fs_la-logger.lo libmogile_fs_la-request.lo \
+	libmogile_fs_la-pool.lo libmogile_fs_la-file.lo \
+	libmogile_fs_la-file_upload.lo \
 	libmogile_fs_la-file_download.lo libmogile_fs_la-watch.lo
 libmogile_fs_la_OBJECTS = $(am_libmogile_fs_la_OBJECTS)
 libmogile_fs_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libmogile_fs_la_CFLAGS) \
-	$(CFLAGS) $(libmogile_fs_la_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -231,7 +231,6 @@ AM_CFLAGS = \
 
 lib_LTLIBRARIES = libmogile_fs.la
 libmogile_fs_la_SOURCES = \
-	lib.c            \
 	tracker.c            \
 	logger.c            \
 	logger.h            \
@@ -241,9 +240,6 @@ libmogile_fs_la_SOURCES = \
 	file_upload.c            \
 	file_download.c            \
 	watch.c
-
-libmogile_fs_la_LDFLAGS = \
-	-lvanessa_logger
 
 libmogile_fs_la_CFLAGS = \
 	-lm
@@ -336,7 +332,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmogile_fs_la-file.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmogile_fs_la-file_download.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmogile_fs_la-file_upload.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmogile_fs_la-lib.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmogile_fs_la-logger.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmogile_fs_la-pool.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmogile_fs_la-request.Plo@am__quote@
@@ -363,13 +358,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
-
-libmogile_fs_la-lib.lo: lib.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmogile_fs_la_CFLAGS) $(CFLAGS) -MT libmogile_fs_la-lib.lo -MD -MP -MF $(DEPDIR)/libmogile_fs_la-lib.Tpo -c -o libmogile_fs_la-lib.lo `test -f 'lib.c' || echo '$(srcdir)/'`lib.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libmogile_fs_la-lib.Tpo $(DEPDIR)/libmogile_fs_la-lib.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='lib.c' object='libmogile_fs_la-lib.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmogile_fs_la_CFLAGS) $(CFLAGS) -c -o libmogile_fs_la-lib.lo `test -f 'lib.c' || echo '$(srcdir)/'`lib.c
 
 libmogile_fs_la-tracker.lo: tracker.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmogile_fs_la_CFLAGS) $(CFLAGS) -MT libmogile_fs_la-tracker.lo -MD -MP -MF $(DEPDIR)/libmogile_fs_la-tracker.Tpo -c -o libmogile_fs_la-tracker.lo `test -f 'tracker.c' || echo '$(srcdir)/'`tracker.c

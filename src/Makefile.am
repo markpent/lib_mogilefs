@@ -15,7 +15,6 @@ lib_LTLIBRARIES = libmogile_fs.la
 
 
 libmogile_fs_la_SOURCES = \
-	lib.c            \
 	tracker.c            \
 	logger.c            \
 	logger.h            \
@@ -25,9 +24,6 @@ libmogile_fs_la_SOURCES = \
 	file_upload.c            \
 	file_download.c            \
 	watch.c
-
-libmogile_fs_la_LDFLAGS = \
-	-lvanessa_logger
 
 libmogile_fs_la_CFLAGS = \
 	-lm

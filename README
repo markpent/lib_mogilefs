@@ -1,3 +1,13 @@
+Dependancies
+
+sudo apt-get install libmicrohttpd-dev libcunit1-dev libcurl4-openssl-dev libapr1-dev libaprutil1-dev
+
+
+
+
+
+
+
 basic structure:
 
 tracker.c
