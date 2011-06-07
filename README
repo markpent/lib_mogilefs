@@ -1,0 +1,63 @@
+basic structure:
+
+tracker.c
+
+manage:
+registering tracker
+connecting to tracker
+executing request
+each connection has its own APR memory pool
+
+
+request.c
+manage calling a pool aware request
+each request has its own APR memory pool
+typical connection psudocode:
+
+for number or trackers
+randomly choose 1
+get a pooled connection (or create if unavailble)
+execute a request on the connection
+if any errors, kill the connection and deallocate it.
+If its a connection error, mark the tracker as inactive (only if > 1 trackers)
+if all goes well return the tracker connection to the pool.
+
+
+pool.c
+manage active/inactive list of trackers.
+manage a connection pool for each tracker.
+pool management tasks:
+every x seconds:
+	check tracker is alive
+		mark tracker active/inactive
+	check number of connections in pools
+		expire oldest connections (LRU)
+
+pool is stack based (FIFO) so we can check the bottom of the stack when expiring.
+	
+	
+file.c
+Manage the File System
+Look after pooling File Server connections
+tracker only calls:
+	get_paths
+	list_keys
+	rename
+	delete
+
+
+file_upload.c
+Manage directly calling cURL to upload a file.
+Manage calling Tracker::create.open => FileServer::upload => Tracker::create_close with timeouts and fail over.
+upload using bytes or FILE
+
+
+file_download.c
+Manage directly downloading from file server using cURL
+Manage calling Tracker::get_paths => FileServer::download with timeouts and fail over.
+Handle callback stream, bytes or FILE return values.
+
+
+
+
+
