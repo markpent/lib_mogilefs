@@ -155,6 +155,11 @@ size_t mfs_buffer_get_write_callback( void *ptr, size_t size, size_t nmemb, void
 	return bytes_written; //if this does not == (size*nmemb) then something when wrong and cURL will abort the download...
 }
 
+int mfs_buffer_get_write_seek(void *instream, curl_off_t offset, int origin) {
+	mfs_log(LOG_ERR, "Seek called on curl callback (download)");
+	return CURL_SEEKFUNC_CANTSEEK;
+}
+
 //if the *file pointer is not NULL, it is assumed we want to store the data in the passed in file
 //if the brigade is not NULL, it is assumed that is how the data will be returned
 apr_status_t mfs_file_server_get(mfs_file_system *file_system, apr_uri_t *uri, char *original_uri, void **bytes, apr_size_t *total_bytes, apr_file_t **file, apr_bucket_brigade *brigade, apr_pool_t *pool, char *destination_file_path) {
@@ -195,6 +200,10 @@ apr_status_t mfs_file_server_get(mfs_file_system *file_system, apr_uri_t *uri, c
 	curl_easy_setopt(conn->curl, CURLOPT_HTTPGET, 1L);
 	curl_easy_setopt(conn->curl, CURLOPT_WRITEFUNCTION, mfs_buffer_get_write_callback);
 	curl_easy_setopt(conn->curl, CURLOPT_WRITEDATA, wbuf);
+
+	curl_easy_setopt(conn->curl, CURLOPT_SEEKFUNCTION, mfs_buffer_get_write_seek);
+	curl_easy_setopt(conn->curl, CURLOPT_SEEKDATA, wbuf);
+	
 	curl_easy_setopt(conn->curl, CURLOPT_CONNECTTIMEOUT_MS, apr_time_as_msec(file_system->file_server_timeout));
 	curl_easy_setopt(conn->curl, CURLOPT_NOSIGNAL, 1L);
 

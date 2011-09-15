@@ -119,6 +119,11 @@ size_t mfs_buffer_put_write_callback( void *ptr, size_t size, size_t nmemb, void
 	return size * nmemb;
 }
 
+int mfs_buffer_put_read_seek(void *instream, curl_off_t offset, int origin) {
+	mfs_log(LOG_ERR, "Seek called on curl callback (upload)");
+	return CURL_SEEKFUNC_CANTSEEK;
+}
+
 apr_status_t mfs_file_server_put(mfs_file_system *file_system, apr_uri_t *uri, char *original_uri, void *bytes, long *total_bytes, apr_file_t *file, apr_pool_t *pool) {
 	struct curl_slist *headerlist=NULL;
   	static const char expect_buf[] = "Expect:";
@@ -142,6 +147,9 @@ apr_status_t mfs_file_server_put(mfs_file_system *file_system, apr_uri_t *uri, c
 	curl_easy_setopt(conn->curl, CURLOPT_PUT, 1L);
 	curl_easy_setopt(conn->curl, CURLOPT_WRITEFUNCTION, mfs_buffer_put_write_callback);
 	curl_easy_setopt(conn->curl, CURLOPT_WRITEDATA, NULL);
+	curl_easy_setopt(conn->curl, CURLOPT_SEEKFUNCTION, mfs_buffer_put_read_seek);
+	curl_easy_setopt(conn->curl, CURLOPT_SEEKDATA, NULL);
+	
 	curl_easy_setopt(conn->curl, CURLOPT_CONNECTTIMEOUT_MS, apr_time_as_msec(file_system->file_server_timeout));
 
 	//curl_easy_setopt(conn->curl, CURLOPT_PROXY, "127.0.0.1:8888");
