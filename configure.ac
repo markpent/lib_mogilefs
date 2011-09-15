@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Created by Anjuta application wizard.
 
-AC_INIT(mogile_fs, 0.1)
+AC_INIT(lib_mogilefs, 0.1)
 
 PROJECT_ROOT=.
 AC_SUBST(PROJECT_ROOT)
