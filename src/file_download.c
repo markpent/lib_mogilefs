@@ -297,7 +297,7 @@ apr_status_t mfs_file_server_get(mfs_file_system *file_system, apr_uri_t *uri, c
 }
 
 //internal method.. that the api calls that looks after tracker calling...
-apr_status_t mfs_file_system_get(mfs_file_system *file_system, char *domain, char *key, void **bytes, apr_size_t *total_bytes, apr_file_t **file, apr_bucket_brigade *brigade, apr_pool_t *pool, char *destination_file_path) {
+apr_status_t mfs_file_system_get(mfs_file_system *file_system, char *domain, char *key, void **bytes, apr_size_t *total_bytes, apr_file_t **file, apr_bucket_brigade *brigade, apr_pool_t *pool, char *destination_file_path, long requiredLength) {
 
 	char **paths;
 	int path_count;
@@ -311,16 +311,31 @@ apr_status_t mfs_file_system_get(mfs_file_system *file_system, char *domain, cha
 		char *path = paths[i];
 		apr_uri_t uri;
 		if((rv = apr_uri_parse(pool, path, &uri)) != APR_SUCCESS) {
-			mfs_log_apr(LOG_ERR, rv, pool, "Unable to parse get_url %s:", path);
+			mfs_log_apr(LOG_ERR, rv, pool, "%s: Unable to parse get_url %s:", key, path);
 		} else if((uri.hostinfo == NULL)||(uri.scheme == NULL)||(uri.path==NULL)) {
-			mfs_log(LOG_ERR, "Unable to parse get_url %s:", path);
+			mfs_log(LOG_ERR, "%s: Unable to parse get_url %s:", key, path);
 			rv = APR_EGENERAL;
 		} else {
 			if((rv = mfs_file_server_get(file_system, &uri, path, bytes, total_bytes, file, brigade, pool, destination_file_path)) != APR_SUCCESS) {
-				mfs_log(LOG_ERR, "Failed to get file from %s. Attempt count = %d", path, i+1);
+				mfs_log(LOG_ERR, "%s: Failed to get file from %s. Attempt count = %d/%d", key, path, i+1, path_count);
 			} else {
-				//we succeeded!
-				return APR_SUCCESS;
+				//we succeeded!.. lets make sure its the correct length (the file server can return a 0 length file..)
+				if(requiredLength >= 0) {
+					if((*total_bytes) != requiredLength) {
+						mfs_log(LOG_ERR, "Failed to get file %s from %s because returned length (%d) does not match the required length (%d). Attempt count = %d/%d", key, path, (*total_bytes), requiredLength, i+1, path_count);
+						rv = APR_EGENERAL;
+					} else {
+						if(i != 0) {
+							mfs_log(LOG_ERR, "Fetched %s from %s Attempt count = %d", key, path, i+1);
+						}
+						return APR_SUCCESS;
+					}
+				} else {
+					if(i != 0) {
+						mfs_log(LOG_ERR, "Fetched %s from %s Attempt count = %d", key, path, i+1);
+					}
+					return APR_SUCCESS;
+				}
 			}
 		}
 	}
@@ -328,19 +343,19 @@ apr_status_t mfs_file_system_get(mfs_file_system *file_system, char *domain, cha
 
 }
 
-apr_status_t mfs_get_file(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, apr_file_t **file, apr_pool_t *pool) {
-	return mfs_file_system_get(file_system, domain, key, NULL, total_bytes, file, NULL, pool, NULL);
+apr_status_t mfs_get_file(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, apr_file_t **file, apr_pool_t *pool, long requiredLength) {
+	return mfs_file_system_get(file_system, domain, key, NULL, total_bytes, file, NULL, pool, NULL, requiredLength);
 }
 
 //return the file in a byte buffer if the file is small enough (file_system.max_buffer_size)
-apr_status_t mfs_get_file_or_bytes(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, void **bytes, apr_file_t **file, apr_pool_t *pool, char *destination_file_path) {
-	return mfs_file_system_get(file_system, domain, key, bytes, total_bytes, file, NULL, pool, destination_file_path);
+apr_status_t mfs_get_file_or_bytes(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, void **bytes, apr_file_t **file, apr_pool_t *pool, char *destination_file_path, long requiredLength) {
+	return mfs_file_system_get(file_system, domain, key, bytes, total_bytes, file, NULL, pool, destination_file_path, requiredLength);
 }
 
 //store the file in a bucket brigade
-apr_status_t mfs_get_brigade(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, apr_bucket_brigade *brigade, apr_pool_t *pool) {
+apr_status_t mfs_get_brigade(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, apr_bucket_brigade *brigade, apr_pool_t *pool, long requiredLength) {
 	apr_file_t *file = NULL;
-	return mfs_file_system_get(file_system, domain, key, NULL, total_bytes, &file, brigade, pool, NULL);
+	return mfs_file_system_get(file_system, domain, key, NULL, total_bytes, &file, brigade, pool, NULL, requiredLength);
 }
 
 

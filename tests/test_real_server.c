@@ -43,7 +43,7 @@ void test_real_server_ok() {
 	apr_size_t total_bytes;
 	apr_file_t *file = NULL;
 
-	rv = mfs_get_file_or_bytes(file_system, REAL_SERVER_DOMAIN, "/tests/upload_test/test1", &total_bytes, &bytes, &file, p, NULL);
+	rv = mfs_get_file_or_bytes(file_system, REAL_SERVER_DOMAIN, "/tests/upload_test/test1", &total_bytes, &bytes, &file, p, NULL, -1);
 
 	CU_ASSERT_EQUAL_FATAL(APR_SUCCESS, rv);
 	
@@ -53,7 +53,7 @@ void test_real_server_ok() {
 	rv = mfs_rename_filepath(file_system, REAL_SERVER_DOMAIN, "/tests/upload_test/test1", "/tests/upload_test/test2", p);
 	CU_ASSERT_EQUAL_FATAL(APR_SUCCESS, rv);
 
-	rv = mfs_get_file_or_bytes(file_system, REAL_SERVER_DOMAIN, "/tests/upload_test/test2", &total_bytes, &bytes, &file, p, NULL);
+	rv = mfs_get_file_or_bytes(file_system, REAL_SERVER_DOMAIN, "/tests/upload_test/test2", &total_bytes, &bytes, &file, p, NULL, -1);
 
 	CU_ASSERT_EQUAL_FATAL(APR_SUCCESS, rv);
 	
@@ -63,7 +63,7 @@ void test_real_server_ok() {
 	rv = mfs_delete(file_system, REAL_SERVER_DOMAIN, "/tests/upload_test/test2", p);
 	CU_ASSERT_EQUAL_FATAL(APR_SUCCESS, rv);
 
-	rv = mfs_get_file_or_bytes(file_system, REAL_SERVER_DOMAIN, "/tests/upload_test/test2", &total_bytes, &bytes, &file, p, NULL);
+	rv = mfs_get_file_or_bytes(file_system, REAL_SERVER_DOMAIN, "/tests/upload_test/test2", &total_bytes, &bytes, &file, p, NULL, -1);
 
 	CU_ASSERT_EQUAL(APR_EBADPATH, rv);
 	mfs_close_file_system(file_system);

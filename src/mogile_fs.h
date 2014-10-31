@@ -382,12 +382,12 @@ apr_status_t mfs_file_server_get(mfs_file_system *file_system, apr_uri_t *uri, c
 
 //get a file and store it in the file parameter
 //if the file pointer is not NULL then use the file, otherwise allocate a file pointer on the fly
-apr_status_t mfs_get_file(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, apr_file_t **file, apr_pool_t *pool);
+apr_status_t mfs_get_file(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, apr_file_t **file, apr_pool_t *pool, long requiredLength);
 
 //return the file in a byte buffer if the file is small enough (file_system.max_buffer_size)
-apr_status_t mfs_get_file_or_bytes(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, void **bytes, apr_file_t **file, apr_pool_t *pool, char *destination_file_path);
+apr_status_t mfs_get_file_or_bytes(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, void **bytes, apr_file_t **file, apr_pool_t *pool, char *destination_file_path, long requiredLength);
 
 //store the file in a bucket brigade
-apr_status_t mfs_get_brigade(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, apr_bucket_brigade *brigade, apr_pool_t *pool);
+apr_status_t mfs_get_brigade(mfs_file_system *file_system, char *domain, char *key, apr_size_t *total_bytes, apr_bucket_brigade *brigade, apr_pool_t *pool, long requiredLength);
 
 #endif

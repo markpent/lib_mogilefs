@@ -47,7 +47,7 @@ void test_file_system_get_ok_bytes() {
 	apr_size_t total_bytes;
 	apr_file_t *file = NULL;
 
-	rv = mfs_get_file_or_bytes(file_system, "domain", "key", &total_bytes, &bytes, &file, p, NULL);
+	rv = mfs_get_file_or_bytes(file_system, "domain", "key", &total_bytes, &bytes, &file, p, NULL, 20);
 
 	stop_test_http_server(handle);
 	stop_test_server(tracker_handle);
@@ -90,7 +90,7 @@ void test_file_system_get_ok_file() {
 
 	CU_ASSERT_EQUAL_FATAL(APR_SUCCESS,apr_file_open(&file, "/tmp/mogfilefs_test_download", APR_READ | APR_WRITE | APR_CREATE | APR_TRUNCATE, APR_OS_DEFAULT, p));
 	
-	rv = mfs_get_file(file_system, "domain", "key", &total_bytes, &file, p);
+	rv = mfs_get_file(file_system, "domain", "key", &total_bytes, &file, p, 20);
 
 	
 	stop_test_http_server(handle);
@@ -143,7 +143,7 @@ void test_file_system_get_ok_either() {
 
 	CU_ASSERT_EQUAL_FATAL(APR_SUCCESS,apr_file_open(&file, "/tmp/mogfilefs_test_download", APR_READ | APR_WRITE | APR_CREATE | APR_TRUNCATE, APR_OS_DEFAULT, p));
 	
-	rv = mfs_get_file_or_bytes(file_system, "domain", "key", &total_bytes, &bytes, &file, p, NULL);
+	rv = mfs_get_file_or_bytes(file_system, "domain", "key", &total_bytes, &bytes, &file, p, NULL, 20);
 
 	
 	stop_test_http_server(handle);
@@ -202,7 +202,7 @@ void test_file_system_get_ok_brigade_large() {
 
 	apr_bucket_brigade *brigade = apr_brigade_create(p, apr_bucket_alloc_create(p));
 	
-	rv = mfs_get_brigade(file_system, "domain", "key", &total_bytes, brigade, p);
+	rv = mfs_get_brigade(file_system, "domain", "key", &total_bytes, brigade, p, buf_len);
 	
 	stop_test_http_server(handle);
 	stop_test_server(tracker_handle);
@@ -251,7 +251,7 @@ void test_file_system_get_failover_bytes() {
 	apr_size_t total_bytes;
 	apr_file_t *file = NULL;
 
-	rv = mfs_get_file_or_bytes(file_system, "domain", "key", &total_bytes, &bytes, &file, p, NULL);
+	rv = mfs_get_file_or_bytes(file_system, "domain", "key", &total_bytes, &bytes, &file, p, NULL, -1);
 
 	stop_test_http_server(handle);
 	stop_test_server(tracker_handle);
@@ -308,7 +308,7 @@ void test_file_system_get_failover_file() {
 
 	CU_ASSERT_EQUAL_FATAL(APR_SUCCESS,apr_file_open(&file, "/tmp/mogfilefs_test_download", APR_READ | APR_WRITE | APR_CREATE | APR_TRUNCATE, APR_OS_DEFAULT, p));
 	
-	rv = mfs_get_file(file_system, "domain", "key", &total_bytes, &file, p);
+	rv = mfs_get_file(file_system, "domain", "key", &total_bytes, &file, p, -1);
 
 	
 	stop_test_http_server(handle1);
@@ -373,7 +373,7 @@ void test_file_system_get_failover_brigade() {
 
 	apr_bucket_brigade *brigade = apr_brigade_create(p, apr_bucket_alloc_create(p));
 	
-	rv = mfs_get_brigade(file_system, "domain", "key", &total_bytes, brigade, p);
+	rv = mfs_get_brigade(file_system, "domain", "key", &total_bytes, brigade, p, -1);
 	
 	stop_test_http_server(handle1);
 	stop_test_http_server(handle2);
@@ -419,11 +419,47 @@ void test_file_system_get_fail_bytes() {
 	apr_size_t total_bytes;
 	apr_file_t *file = NULL;
 
-	rv = mfs_get_file_or_bytes(file_system, "domain", "key", &total_bytes, &bytes, &file, p, NULL);
+	rv = mfs_get_file_or_bytes(file_system, "domain", "key", &total_bytes, &bytes, &file, p, NULL, -1);
 
 	stop_test_server(tracker_handle);
 
 	CU_ASSERT_EQUAL_FATAL(APR_EGENERAL, rv);
+	mfs_close_file_system(file_system);
+	apr_pool_destroy(p); 
+}
+
+
+void test_file_system_file_size_mismatch() {
+	mfs_file_system *file_system;
+	apr_status_t rv;
+	apr_pool_t *p = mfs_test_get_pool();
+
+	char test_response[] = "OK 123 paths=1&path1=http%3A%2F%2F127.0.0.1%3A8081%2Fpath%2Fone\r\n";
+	
+	test_server_handle * tracker_handle = test_start_basic_server(test_response, 9991, p);
+
+	char tracker_list_str[] = "127.0.0.1:9991";
+	tracker_pool * trackers = mfs_pool_init_quick(tracker_list_str);
+
+	
+	CU_ASSERT_EQUAL_FATAL(APR_SUCCESS, mfs_init_file_system(&file_system, trackers));
+
+	char data[] ="THIS IS THE GET DATA";
+	test_http_server *handle = start_test_http_server(8081, data, 200, &test_http_server_ok_handler);
+	CU_ASSERT_PTR_NOT_NULL_FATAL(handle);
+
+	
+	void *bytes;
+	apr_size_t total_bytes;
+	apr_file_t *file = NULL;
+
+	rv = mfs_get_file_or_bytes(file_system, "domain", "key", &total_bytes, &bytes, &file, p, NULL, 21);
+
+	stop_test_http_server(handle);
+	stop_test_server(tracker_handle);
+
+	CU_ASSERT_EQUAL_FATAL(APR_EGENERAL, rv);
+	
 	mfs_close_file_system(file_system);
 	apr_pool_destroy(p); 
 }
