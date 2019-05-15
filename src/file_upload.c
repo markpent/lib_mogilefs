@@ -152,10 +152,16 @@ apr_status_t mfs_file_server_put(mfs_file_system *file_system, apr_uri_t *uri, c
 	
 	curl_easy_setopt(conn->curl, CURLOPT_CONNECTTIMEOUT_MS, apr_time_as_msec(file_system->file_server_timeout));
 
+	/* abort if slower than 30 bytes/sec during 60 seconds */
+	curl_easy_setopt(conn->curl, CURLOPT_LOW_SPEED_TIME, 60L);
+  curl_easy_setopt(conn->curl, CURLOPT_LOW_SPEED_LIMIT, 30L);
+  
 	//curl_easy_setopt(conn->curl, CURLOPT_PROXY, "127.0.0.1:8888");
 	
 	//curl_easy_setopt(conn->curl, CURLOPT_TIMEOUT_MS, apr_time_as_msec(file_system->file_server_timeout));
 
+	/*
+	use CURLOPT_LOW_SPEED_TIME instead
 	mfs_timeout_tracker *tt = apr_palloc(pool, sizeof(mfs_timeout_tracker));
 	tt->start_time = apr_time_now();
 	tt->last_transferred_at = 0;
@@ -164,7 +170,7 @@ apr_status_t mfs_file_server_put(mfs_file_system *file_system, apr_uri_t *uri, c
 	curl_easy_setopt(conn->curl, CURLOPT_NOPROGRESS, 0L);
 	curl_easy_setopt(conn->curl, CURLOPT_PROGRESSFUNCTION, mfs_curl_upload_timeout_checker);
 	curl_easy_setopt(conn->curl, CURLOPT_PROGRESSDATA, tt);
-
+*/
 		
 	curl_easy_setopt(conn->curl, CURLOPT_NOSIGNAL, 1L);
 	

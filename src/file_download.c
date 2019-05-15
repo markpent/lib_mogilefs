@@ -206,7 +206,12 @@ apr_status_t mfs_file_server_get(mfs_file_system *file_system, apr_uri_t *uri, c
 	
 	curl_easy_setopt(conn->curl, CURLOPT_CONNECTTIMEOUT_MS, apr_time_as_msec(file_system->file_server_timeout));
 	curl_easy_setopt(conn->curl, CURLOPT_NOSIGNAL, 1L);
+	
+	/* abort if slower than 30 bytes/sec during 60 seconds */
+	curl_easy_setopt(conn->curl, CURLOPT_LOW_SPEED_TIME, 60L);
+  curl_easy_setopt(conn->curl, CURLOPT_LOW_SPEED_LIMIT, 30L);
 
+	/*
 	mfs_timeout_tracker *tt = apr_palloc(pool, sizeof(mfs_timeout_tracker));
 	tt->start_time = apr_time_now();
 	tt->last_transferred_at = 0;
@@ -214,7 +219,7 @@ apr_status_t mfs_file_server_get(mfs_file_system *file_system, apr_uri_t *uri, c
 	tt->last_transfer_total=0;
 	curl_easy_setopt(conn->curl, CURLOPT_NOPROGRESS, 0L);
 	curl_easy_setopt(conn->curl, CURLOPT_PROGRESSFUNCTION, mfs_curl_download_timeout_checker);
-	curl_easy_setopt(conn->curl, CURLOPT_PROGRESSDATA, tt);
+	curl_easy_setopt(conn->curl, CURLOPT_PROGRESSDATA, tt);*/
 
 	//need to clear these values in case connection used for 
 	curl_easy_setopt(conn->curl, CURLOPT_READFUNCTION, NULL);
