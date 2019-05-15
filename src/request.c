@@ -21,7 +21,7 @@
 #include <stdbool.h>
 
 apr_status_t mfs_request_do(tracker_pool *trackers, char *action, tracker_request_parameters *parameters, bool *ok, apr_hash_t *result, apr_pool_t *pool, apr_interval_time_t timeout) {
-	apr_status_t rv;
+	apr_status_t rv = APR_ECONNREFUSED; //default to APR_ECONNREFUSED becuase if we dont call the server its becuase they are all down
 	bool auto_allocate_pool;
 	if(pool == NULL) {
 		if((rv=apr_pool_create(&pool,NULL)) != APR_SUCCESS) {

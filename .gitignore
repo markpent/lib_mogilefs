@@ -3,10 +3,12 @@
 .anjuta*
 INSTALL
 Makefile
+Makefile.in
 TODO*
 aclocal.m4
 autom4te.cache*
-config*
+configure
+config.*
 depcomp
 install-sh
 libtool
@@ -20,3 +22,4 @@ missing
 *.la
 stamp-h1
 tests/tests
+Debug/
