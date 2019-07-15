@@ -152,6 +152,10 @@ apr_status_t mfs_file_server_put(mfs_file_system *file_system, apr_uri_t *uri, c
 	
 	curl_easy_setopt(conn->curl, CURLOPT_CONNECTTIMEOUT_MS, apr_time_as_msec(file_system->file_server_timeout));
 
+#if CURL_AT_LEAST_VERSION(7,62,0)
+    curl_easy_setopt(conn->curl, CURLOPT_UPLOAD_BUFFERSIZE, 524288L);
+#endif
+
 	/* abort if slower than 30 bytes/sec during 60 seconds */
 	curl_easy_setopt(conn->curl, CURLOPT_LOW_SPEED_TIME, 60L);
   curl_easy_setopt(conn->curl, CURLOPT_LOW_SPEED_LIMIT, 30L);

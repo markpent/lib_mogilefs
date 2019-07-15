@@ -57,6 +57,23 @@ apr_status_t mfs_init_file_system(mfs_file_system ** file_system, tracker_pool *
 	fs->client_id = NULL;
 	*file_system = fs;
 	mfs_pool_start_maintenance_thread(trackers);
+	
+	char *has_upload_buffer = "false";
+	char *has_download_buffer = "false";
+	
+#if CURL_AT_LEAST_VERSION(7,10,0)
+  has_download_buffer = "true";
+#endif
+#if CURL_AT_LEAST_VERSION(7,62,0)
+  has_upload_buffer = "true";
+#endif
+
+  char *cv = curl_version();
+
+	
+	mfs_log(LOG_INFO, "Init Filesystem. has_download_buffer=%s, has_upload_buffer=%s, curl_version=%s", has_download_buffer, has_upload_buffer, cv);
+	
+	
 	return APR_SUCCESS;
 }
 
@@ -99,6 +116,7 @@ apr_status_t mfs_get_file_server(mfs_file_system *file_system, apr_uri_t *uri, m
 	
 	if(rv != APR_SUCCESS) {
 		mfs_log_apr(LOG_CRIT, rv, file_system->pool, "Unable to read-lock file_system mutex:");
+		exit(1);
 		return rv;
 	}
 	fs = (mfs_file_server *)apr_hash_get(file_system->file_servers, uri->hostinfo,  klen);
@@ -114,6 +132,7 @@ apr_status_t mfs_get_file_server(mfs_file_system *file_system, apr_uri_t *uri, m
 	rv = apr_thread_rwlock_wrlock(file_system->lock);
 	if(rv != APR_SUCCESS) {
 		mfs_log_apr(LOG_CRIT, rv, file_system->pool, "Unable to write-lock file_system mutex:");
+		exit(1);
 		return rv;
 	}
 	//first check the file server was not added in the last few ops...
@@ -132,6 +151,12 @@ apr_status_t mfs_get_file_server(mfs_file_system *file_system, apr_uri_t *uri, m
 		if(rv != APR_SUCCESS) {
 			mfs_log_apr(LOG_ERR, rv, file_system->pool, "Unable to unlock write-lock file system mutex:");
 		}
+	} else {
+	  rv = apr_thread_rwlock_unlock(file_system->lock);
+	  if(rv != APR_SUCCESS) {
+			mfs_log_apr(LOG_ERR, rv, file_system->pool, "Unable to unlock write-lock file system mutex:");
+		}
+	  mfs_log(LOG_INFO, "Double got file server");
 	}
 	*file_server = fs;
 	return APR_SUCCESS;
@@ -260,7 +285,12 @@ apr_status_t mfs_delete_filepath_node(mfs_file_system *file_system, const char *
 	}
 	if(!ok) {
 		mfs_log(LOG_ERR, "Tracker returned error %s (%s) when calling filepaths_delete_node for key %s", apr_hash_get(result, MFS_TRACKER_ERROR_CODE, APR_HASH_KEY_STRING), apr_hash_get(result, MFS_TRACKER_ERROR_DESC, APR_HASH_KEY_STRING), key );
-		rv = APR_EGENERAL;
+		char *e_code = apr_hash_get(result, MFS_TRACKER_ERROR_CODE, APR_HASH_KEY_STRING);
+		if(e_code != NULL && strcmp(e_code, "directory_not_empty") == 0) {
+		  rv = APR_ENOTEMPTY;
+		} else {
+		  rv = APR_EGENERAL;
+		}
 	}
 	return rv;
 }

@@ -226,6 +226,11 @@ apr_status_t mfs_file_server_get(mfs_file_system *file_system, apr_uri_t *uri, c
 	curl_easy_setopt(conn->curl, CURLOPT_READDATA, NULL);
 	//curl_easy_setopt(conn->curl, CURLOPT_INFILESIZE_LARGE, 0);
 	
+	/* ask libcurl to allocate a larger receive buffer */
+#if CURL_AT_LEAST_VERSION(7,10,0)
+  curl_easy_setopt(conn->curl, CURLOPT_BUFFERSIZE, 524288L);
+#endif
+	
 	CURLcode res = curl_easy_perform(conn->curl);
 	if(res != CURLE_OK) {
 		mfs_log(LOG_ERR, "Error downloading from %s:%s (%d)", original_uri, curl_easy_strerror(res), res);
@@ -315,6 +320,7 @@ apr_status_t mfs_file_system_get(mfs_file_system *file_system, char *domain, cha
 	for(i = 0; i < path_count; i++) {
 		char *path = paths[i];
 		apr_uri_t uri;
+		*bytes = NULL; //make sure its NULL in case this time we allocated memory, but next time it uses a file
 		if((rv = apr_uri_parse(pool, path, &uri)) != APR_SUCCESS) {
 			mfs_log_apr(LOG_ERR, rv, pool, "%s: Unable to parse get_url %s:", key, path);
 		} else if((uri.hostinfo == NULL)||(uri.scheme == NULL)||(uri.path==NULL)) {
